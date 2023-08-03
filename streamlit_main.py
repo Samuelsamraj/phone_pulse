@@ -337,9 +337,7 @@ if SELECT == "Contact":
     name = "Samuel samraj"
     mail = (f'{"Mail :"}  {"morlensamuels@gmail.com"}')
     description = "An Aspiring DATA-SCIENTIST..!"
-    social_media = {
-        "Youtube": "https://www.youtube.com/channel/UCHJz22G_3koWYX_7fwxaF0Q",
-        "GITHUB": "https://github.com/Samuelsamraj"}
+    social_media = {"GITHUB": "https://github.com/Samuelsamraj"}
         
     
     col1, col2 = st.columns(2)
