@@ -54,7 +54,7 @@ if SELECT == "Basic insights":
                
     select = st.selectbox("Select the option",options)
     if select=="Top 10 states based on year and amount of transaction":
-        cursor.execute("SELECT DISTINCT States, Transaction_Year, SUM(Transaction_Amount) AS Total_Transaction_Amount FROM top_tran GROUP BY States, Transaction_Year ORDER BY Total_Transaction_Amount DESC LIMIT 10");
+        cursor.execute("SELECT DISTINCT State, Year, SUM(Transaction_amount) AS Total_Transaction_Amount FROM top_trans_pin GROUP BY State, Year ORDER BY Total_Transaction_Amount DESC LIMIT 10");
         
         df = pd.DataFrame(cursor.fetchall(), columns=['States','Transaction_Year', 'Transaction_Amount'])
         col1,col2 = st.columns(2)
@@ -67,19 +67,19 @@ if SELECT == "Basic insights":
             #2
             
     elif select=="List 10 states based on type and amount of transaction":
-        cursor.execute("SELECT DISTINCT States, SUM(Transaction_Count) as Total FROM top_tran GROUP BY States ORDER BY Total ASC LIMIT 10");
-        df = pd.DataFrame(cursor.fetchall(),columns=['States','Total_Transaction'])
+        cursor.execute("SELECT DISTINCT State, SUM(Transaction_count) as Total FROM top_trans_pin GROUP BY State ORDER BY Total ASC LIMIT 10");
+        df = pd.DataFrame(cursor.fetchall(),columns=['State','Total_transaction'])
         col1,col2 = st.columns(2)
         with col1:
             st.write(df)
         with col2:
             st.title("List 10 states based on type and amount of transaction")
-            st.bar_chart(data=df,x="Total_Transaction",y="States")
+            st.bar_chart(data=df,x="Total_transaction",y="State")
             
             #3
             
     elif select == "Top 5 Transaction_Type based on Transaction_Amount":
-        cursor.execute("SELECT DISTINCT Transaction_Type, SUM(Transaction_Amount) AS Amount FROM agg_user GROUP BY Transaction_Type ORDER BY Amount DESC LIMIT 5")
+        cursor.execute("SELECT DISTINCT Transaction_type, SUM(Transaction_amount) AS Amount FROM agg_trans GROUP BY Transaction_type ORDER BY Amount DESC LIMIT 5")
         df = pd.DataFrame(cursor.fetchall(), columns=['Transaction_Type', 'Transaction_Amount'])
         col1, col2 = st.columns(2)
         with col1:
@@ -91,7 +91,7 @@ if SELECT == "Basic insights":
             #4
             
     elif select=="Top 10 Registered-users based on States and District":
-        cursor.execute("SELECT DISTINCT State, District, SUM(RegisteredUsers) AS Users FROM top_user GROUP BY State, District ORDER BY Users DESC LIMIT 10");
+        cursor.execute("SELECT DISTINCT State, District, SUM(Registered_users) AS Users FROM top_user_dist GROUP BY State, District ORDER BY Users DESC LIMIT 10");
         df = pd.DataFrame(cursor.fetchall(),columns=['State','District','RegisteredUsers'])
         col1,col2 = st.columns(2)
         with col1:
@@ -103,31 +103,31 @@ if SELECT == "Basic insights":
             #5
             
     elif select=="Top 10 Districts based on states and Count of transaction":
-        cursor.execute("SELECT DISTINCT States,District,SUM(Transaction_Count) AS Counts FROM map_tran GROUP BY States,District ORDER BY Counts DESC LIMIT 10");
-        df = pd.DataFrame(cursor.fetchall(),columns=['States','District','Transaction_Count'])
+        cursor.execute("SELECT DISTINCT State,District,SUM(Transaction_count) AS Counts FROM top_trans_dist GROUP BY State,District ORDER BY Counts DESC LIMIT 10");
+        df = pd.DataFrame(cursor.fetchall(),columns=['State','District','Transaction_count'])
         col1,col2 = st.columns(2)
         with col1:
             st.write(df)
         with col2:
             st.title("Top 10 Districts based on states and Count of transaction")
-            st.bar_chart(data=df,y="States",x="Transaction_Count")
+            st.bar_chart(data=df,y="State",x="Transaction_count")
             
             #6
             
     elif select=="List 10 Districts based on states and amount of transaction":
-        cursor.execute("SELECT DISTINCT States,Transaction_year,SUM(Transaction_Amount) AS Amount FROM agg_trans GROUP BY States, Transaction_year ORDER BY Amount ASC LIMIT 10");
-        df = pd.DataFrame(cursor.fetchall(),columns=['States','Transaction_year','Transaction_Amount'])
+        cursor.execute("SELECT DISTINCT State, year,SUM(Transaction_amount) AS Amount FROM agg_trans GROUP BY State, year ORDER BY Amount ASC LIMIT 10");
+        df = pd.DataFrame(cursor.fetchall(),columns=['State','year','Transaction_amount'])
         col1,col2 = st.columns(2)
         with col1:
             st.write(df)
         with col2:
             st.title("Least 10 Districts based on states and amount of transaction")
-            st.bar_chart(data=df,y="States",x="Transaction_Amount")
+            st.bar_chart(data=df,y="State",x="Transaction_amount")
             
             #7
             
     elif select=="List 10 Transaction_Count based on Districts and states":
-        cursor.execute("SELECT DISTINCT States, District, SUM(Transaction_Count) AS Counts FROM map_tran GROUP BY States,District ORDER BY Counts ASC LIMIT 10");
+        cursor.execute("SELECT DISTINCT State, District, SUM(Transaction_count) AS Counts FROM map_trans GROUP BY State,District ORDER BY Counts ASC LIMIT 10");
         df = pd.DataFrame(cursor.fetchall(),columns=['States','District','Transaction_Count'])
         col1,col2 = st.columns(2)
         with col1:
@@ -139,7 +139,7 @@ if SELECT == "Basic insights":
             #8
              
     elif select=="Top 10 RegisteredUsers based on states and District":
-        cursor.execute("SELECT DISTINCT States,District, SUM(RegisteredUsers) AS Users FROM map_user GROUP BY States,District ORDER BY Users DESC LIMIT 10");
+        cursor.execute("SELECT DISTINCT State,District, SUM(Registered_users) AS Users FROM map_user GROUP BY State,District ORDER BY Users DESC LIMIT 10");
         df = pd.DataFrame(cursor.fetchall(),columns = ['States','District','RegisteredUsers'])
         col1,col2 = st.columns(2)
         with col1:
@@ -273,7 +273,7 @@ if SELECT == "Home":
     fig_ch.add_trace( fig.data[0])
     fig_ch.add_trace(fig1.data[0])
     st.write("### **:blue[PhonePe India Map]**")
-    colT1,colT2 = st.columns([6,4])
+    colT1,colT2 = st.columns([8,4])
     with colT1:
         st.plotly_chart(fig_ch, use_container_width=True)
     with colT2:
@@ -303,8 +303,56 @@ if SELECT == "Home":
 
     
     
+#----------------About-----------------------#
+
+if SELECT == "About":
+    col1,col2 = st.columns(2)
+    with col1:
+        st.video("C:\\Users\\morle\\Downloads\\PhonePe BikeInsurance Tamil.mkv")
+    with col2:
+        st.image(Image.open("C:\\Users\\morle\\Downloads\\phonepe-logo.png"),width = 500)
+        st.write("---")
+        st.subheader("The Indian digital payments story has truly captured the world's imagination."
+                 " From the largest towns to the remotest villages, there is a payments revolution being driven by the penetration of mobile phones, mobile internet and states-of-the-art payments infrastructure built as Public Goods championed by the central bank and the government."
+                 " Founded in December 2015, PhonePe has been a strong beneficiary of the API driven digitisation of payments in India. When we started, we were constantly looking for granular and definitive data sources on digital payments in India. "
+                 "PhonePe Pulse is our way of giving back to the digital payments ecosystem.")
+    st.write("---")
+    col1,col2 = st.columns(2)
+    with col1:
+        st.title("THE BEAT OF PHONEPE")
+        st.write("---")
+        st.subheader("Phonepe became a leading digital payments company")
+        st.image(Image.open("C:\\phonepe\\Phonepe_Pulse_Data_Visualization//top.jpeg"),width = 400)
+        with open("C:\phonepe\Phonepe_Pulse_Data_Visualization/annual report.pdf","rb") as f:
+            data = f.read()
+        st.download_button("DOWNLOAD REPORT",data,file_name="annual report.pdf")
+    with col2:
+        st.image(Image.open("C:\\phonepe\\Phonepe_Pulse_Data_Visualization//report.jpeg"),width = 800)
 
 
+#----------------------Contact---------------#
+
+
+if SELECT == "Contact":
+    name = "Samuel samraj"
+    mail = (f'{"Mail :"}  {"morlensamuels@gmail.com"}')
+    description = "An Aspiring DATA-SCIENTIST..!"
+    social_media = {
+        "Youtube": "https://www.youtube.com/channel/UCHJz22G_3koWYX_7fwxaF0Q",
+        "GITHUB": "https://github.com/Samuelsamraj"}
+        
+    
+    col1, col2 = st.columns(2)
+    
+    with col2:
+        st.title('Phonepe Pulse data visualisation')
+        st.write("The goal of this project is to extract data from the Phonepe pulse Github repository, transform and clean the data, insert it into a MySQL database, and create a live geo visualization dashboard using Streamlit and Plotly in Python. The dashboard will display the data in an interactive and visually appealing manner, with at least 10 different dropdown options for users to select different facts and figures to display. The solution must be secure, efficient, and user-friendly, providing valuable insights and information about the data in the Phonepe pulse Github repository.")
+        st.write("---")
+        st.subheader(mail)
+    st.write("#")
+    cols = st.columns(len(social_media))
+    for index, (platform, link) in enumerate(social_media.items()):
+        cols[index].write(f"[{platform}]({link})")
 
 
 
