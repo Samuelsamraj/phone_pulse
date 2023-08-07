@@ -12,9 +12,10 @@ import requests
 import geopandas as gpd
 # connect to the database
 import mysql.connector
-
+import seaborn as sns
+from matplotlib.animation import FuncAnimation
 #establishing the connection
-conn = mysql.connector.connect(user='root', password='Samuel@151299', host='127.0.0.1', database="phonepe_pulse")
+conn = mysql.connector.connect(user='root', password='password', host='127.0.0.1', database="database")
 
 # create a cursor object
 cursor = conn.cursor()
@@ -28,17 +29,17 @@ SELECT = option_menu(
     default_index=2,
     orientation="horizontal",
     styles={"container": {"padding": "0!important", "background-color": "white","size":"cover", "width": "100%"},
-        "icon": {"color": "black", "font-size": "20px"},
-        "nav-link": {"font-size": "20px", "text-align": "center", "margin": "-2px", "--hover-color": "#6F36AD"},
-        "nav-link-selected": {"background-color": "#6F36AD"}})
-
+        "icon": {"color": "red", "font-size": "20px"},
+        "nav-link": {"font-size": "20px", "text-align": "center", "margin": "-2px", "--hover-color": "orange"},
+        "nav-link-selected": {"background-color": "green"}})
+     
 
 #---------------------Basic Insights -----------------#
 
 
 if SELECT == "Basic insights":
     st.title("BASIC INSIGHTS")
-    st.write("----")
+    #st.write("SAMUELS PROJECT")
     st.subheader("Let's know some basic insights about the data")
     options = ["--select--",
                "Top 10 states based on year and amount of transaction",
@@ -61,8 +62,8 @@ if SELECT == "Basic insights":
         with col1:
             st.write(df)
         with col2:
-            st.title("Top 10 states and amount of transaction")
-            st.bar_chart(data=df,x="Transaction_Amount",y="States")
+            #st.title("Top 10 states and amount of transaction - Line Chart")
+            st.line_chart(data=df.set_index('States')['Transaction_Amount'])
             
             #2
             
@@ -73,8 +74,15 @@ if SELECT == "Basic insights":
         with col1:
             st.write(df)
         with col2:
-            st.title("List 10 states based on type and amount of transaction")
-            st.bar_chart(data=df,x="Total_transaction",y="State")
+            #st.title("List 10 states based on type and amount of transaction - Custom Plot")
+            plt.figure(figsize=(10, 6))
+            sns.barplot(data=df, x='State', y='Total_transaction', palette='coolwarm')
+            plt.xticks(rotation=45, ha='right')
+            plt.xlabel('States')
+            plt.ylabel('Total Transaction')
+            st.pyplot(plt)
+
+
             
             #3
             
@@ -85,10 +93,11 @@ if SELECT == "Basic insights":
         with col1:
             st.write(df)
         with col2:
-            st.title("Top 5 Transaction_Type based on Transaction_Amount")
             st.bar_chart(data=df, y="Transaction_Type", x="Transaction_Amount")
-
-            #4
+  
+            
+            
+           #4
             
     elif select=="Top 10 Registered-users based on States and District":
         cursor.execute("SELECT DISTINCT State, District, SUM(Registered_users) AS Users FROM top_user_dist GROUP BY State, District ORDER BY Users DESC LIMIT 10");
@@ -97,9 +106,10 @@ if SELECT == "Basic insights":
         with col1:
             st.write(df)
         with col2:
-            st.title("Top 10 Registered-users based on States and District")
-            st.bar_chart(data=df,y="State",x="RegisteredUsers")
+            fig = px.treemap(df, path=['State', 'District'], values='RegisteredUsers')
+            st.plotly_chart(fig)
             
+
             #5
             
     elif select=="Top 10 Districts based on states and Count of transaction":
@@ -109,8 +119,13 @@ if SELECT == "Basic insights":
         with col1:
             st.write(df)
         with col2:
-            st.title("Top 10 Districts based on states and Count of transaction")
-            st.bar_chart(data=df,y="State",x="Transaction_count")
+            #st.title("Top 10 Districts based on states and Count of transaction")
+            fig = px.sunburst(df, path=['State', 'District'], values='Transaction_count')
+            fig.update_traces(textinfo='label+percent entry')
+            fig.update_layout(margin=dict(t=0, l=0, r=0, b=0))
+            st.plotly_chart(fig)
+
+
             
             #6
             
@@ -121,20 +136,37 @@ if SELECT == "Basic insights":
         with col1:
             st.write(df)
         with col2:
-            st.title("Least 10 Districts based on states and amount of transaction")
-            st.bar_chart(data=df,y="State",x="Transaction_amount")
+            #st.title("Least 10 Districts based on states and amount of transaction")
+            plt.figure(figsize=(10, 6))
+            sns.barplot(data=df, x='State', y='Transaction_amount', ci=None, estimator=min)
+            plt.xlabel('State')
+            plt.ylabel('Transaction Amount')
+            plt.title('Least 10 Districts Based on States and Transaction Amount')
+            plt.legend(title='District', loc='upper right')
+            plt.xticks(rotation=45, ha='right')
+            plt.tight_layout()
+            st.pyplot(plt)
+
+
             
-            #7
+            
+           #7
             
     elif select=="List 10 Transaction_Count based on Districts and states":
-        cursor.execute("SELECT DISTINCT State, District, SUM(Transaction_count) AS Counts FROM map_trans GROUP BY State,District ORDER BY Counts ASC LIMIT 10");
+        cursor.execute("SELECT DISTINCT State, District, SUM(Transaction_count) AS Counts FROM map_trans GROUP BY State,District ORDER BY Counts DESC LIMIT 10");
         df = pd.DataFrame(cursor.fetchall(),columns=['States','District','Transaction_Count'])
         col1,col2 = st.columns(2)
         with col1:
             st.write(df)
         with col2:
-            st.title("List 10 Transaction_Count based on Districts and states")
-            st.bar_chart(data=df,y="States",x="Transaction_Count")
+            plt.figure(figsize=(8, 8))
+            plt.pie(df.groupby('States')['Transaction_Count'].sum(), labels=df['States'].unique(), autopct='%1.1f%%', shadow=True)
+            plt.title('Top 10 Transaction Counts Based on States')
+            plt.tight_layout()
+            st.pyplot(plt)
+
+            
+            
             
             #8
              
@@ -145,8 +177,16 @@ if SELECT == "Basic insights":
         with col1:
             st.write(df)
         with col2:
-            st.title("Top 10 RegisteredUsers based on states and District")
-            st.bar_chart(data=df,y="States",x="RegisteredUsers")
+            #st.title("Top 10 RegisteredUsers based on states and District")
+            plt.figure(figsize=(10, 6))
+            sns.barplot(data=df, x='States', y='RegisteredUsers', hue='District')
+            plt.xlabel('States')
+            plt.ylabel('Registered Users')
+            plt.legend(title='District', loc='upper right')
+            plt.xticks(rotation=45, ha='right')
+            plt.tight_layout()
+            st.pyplot(plt)
+
 
 
 #----------------Home----------------------#
@@ -259,7 +299,7 @@ if SELECT == "Home":
                         title='District',
                         size_max=22)
     
-    fig1.update_traces(marker=dict(color="rebeccapurple" ,line_width=1))    #rebeccapurple
+    fig1.update_traces(marker=dict(color="green" ,line_width=1))    #rebeccapurple
 #coropleth mapping india
     fig_ch = px.choropleth(
                         Coropleth_Dataset,
@@ -329,15 +369,18 @@ if SELECT == "About":
     with col2:
         st.image(Image.open("C:\\phonepe\\Phonepe_Pulse_Data_Visualization//report.jpeg"),width = 800)
 
-
+        st.caption("Made 🤩 by @samuelsamraj")
 #----------------------Contact---------------#
 
 
 if SELECT == "Contact":
-    name = "Samuel samraj"
+    name = "Samuel Samraj"
     mail = (f'{"Mail :"}  {"morlensamuels@gmail.com"}')
     description = "An Aspiring DATA-SCIENTIST..!"
-    social_media = {"GITHUB": "https://github.com/Samuelsamraj"}
+    social_media = {
+        
+        "GITHUB": "https://github.com/Samuelsamraj/phone_pulse#phone_pulse",
+        "LINKEDIN": "https://www.linkedin.com/in/samuel-samraj-28a25a241"}
         
     
     col1, col2 = st.columns(2)
@@ -351,7 +394,6 @@ if SELECT == "Contact":
     cols = st.columns(len(social_media))
     for index, (platform, link) in enumerate(social_media.items()):
         cols[index].write(f"[{platform}]({link})")
-
 
 
 
